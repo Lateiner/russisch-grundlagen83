@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bild-Verb-Training: Russische Kleidung-Verben</title>
+    <!-- Polyfill für Drag and Drop auf Touch-Geräten -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --accent-orange: #e67e22;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.4;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        .instruction-box {
+            background: #e1f5fe;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 5px solid var(--secondary-color);
+            margin-bottom: 25px;
+        }
+
+        .instruction-box h2 {
+            margin: 0 0 5px 0;
+            font-size: 1.1rem;
+            color: var(--secondary-color);
+        }
+
+        .instruction-box p {
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        /* Verben-Pool */
+        .verb-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            padding: 15px;
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        .verb-tag {
+            padding: 8px 12px;
+            background: var(--secondary-color);
+            color: white;
+            border-radius: 6px;
+            cursor: grab;
+            user-select: none;
+            font-weight: bold;
+            font-size: 0.85rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 2px solid transparent;
+        }
+
+        .verb-tag:active { cursor: grabbing; }
+
+        /* Game Board */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #e1e4e8;
+            border-radius: 12px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+
+        .card:hover { transform: translateY(-3px); }
+
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+        }
+
+        .card-desc {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #555;
+            text-align: center;
+            margin-bottom: 12px;
+            min-height: 2.4em;
+            display: flex;
+            align-items: center;
+        }
+
+        .drop-zone {
+            width: 100%;
+            min-height: 45px;
+            border: 2px dashed #bbb;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fdfdfd;
+            font-size: 0.8rem;
+            color: #999;
+            transition: all 0.3s;
+        }
+
+        .drop-zone.drag-over {
+            background: #e3f2fd;
+            border-color: var(--secondary-color);
+        }
+
+        /* Feedback */
+        .correct { background-color: var(--success-color) !important; border-color: var(--success-color) !important; color: white; }
+        .wrong { background-color: var(--error-color) !important; border-color: var(--error-color) !important; color: white; }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; color: white; }
+        .btn-sol { background-color: var(--accent-orange); color: white; }
+
+        @media (max-width: 600px) {
+            .game-grid { grid-template-columns: 1fr 1fr; }
+            .card-icon { font-size: 2rem; }
+            h1 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russisch-Training: Bild-Verb-Zuordnung</h1>
+
+    <div class="instruction-box">
+        <h2>Anleitung</h2>
+        <p>Ordne jedem Bild das passende russische Verb zu. Ziehe die blauen Wortfelder aus dem Pool auf das entsprechende Feld unter dem Bild. 
+           <b>Grün</b> markiert richtige Treffer, <b>Rot</b> zeigt Fehler an.</p>
+    </div>
+
+    <div class="verb-pool" id="verb-pool">
+        <!-- Verben werden dynamisch geladen -->
+    </div>
+
+    <div class="game-grid" id="game-grid">
+        <!-- Karten werden dynamisch geladen -->
+    </div>
+
+    <div class="controls">
+        <button class="btn-reset" onclick="resetGame()">Zurücksetzen & Mischen</button>
+        <button class="btn-sol" onclick="showSolution()">Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    const scenarios = [
+        { icon: '🧢', desc: 'Mütze aufsetzen', verb: 'НАДЕТЬ ШАПКУ' },
+        { icon: '👶', desc: 'Das Baby anziehen', verb: 'ОДЕТЬ РЕБЁНКА' },
+        { icon: '🕶️', desc: 'Sonnenbrille aufsetzen', verb: 'НАДЕТЬ ОЧКИ' },
+        { icon: '🧘', desc: 'Sich morgens anziehen', verb: 'ОДЕТЬСЯ' },
+        { icon: '👖', desc: 'Die Hose anziehen', verb: 'НАДЕТЬ БРЮКИ' },
+        { icon: '🐕', desc: 'Dem Hund einen Mantel anziehen', verb: 'ОДЕТЬ СОБАКУ' },
+        { icon: '☕', desc: 'Schmutziges T-Shirt wechseln', verb: 'ПЕРЕОДЕТЬ ФУТБОЛКУ' },
+        { icon: '🛌', desc: 'Sich für das Bett umziehen', verb: 'ПЕРЕОДЕТЬСЯ' },
+        { icon: '💍', desc: 'Einen Ring anstecken', verb: 'НАДЕТЬ КОЛЬЦО' },
+        { icon: '🧸', desc: 'Die Puppe anziehen', verb: 'ОДЕТЬ КУКЛУ' },
+        { icon: '😷', desc: 'Eine Maske aufsetzen', verb: 'НАДЕТЬ МАСКУ' },
+        { icon: '❄️', desc: 'Sich warm anziehen', verb: 'ОДЕТЬСЯ ТЕПЛО' },
+        { icon: '🧤', desc: 'Handschuhe anziehen', verb: 'НАДЕТЬ ПЕРЧАТКИ' },
+        { icon: '🍼', desc: 'Das Baby umziehen (andere Kleidung)', verb: 'ПЕРЕОДЕТЬ МЛАДЕНЦА' },
+        { icon: '🏃', desc: 'Sich nach dem Sport umziehen', verb: 'ПЕРЕОДЕТЬСЯ' },
+        { icon: '👟', desc: 'Schuhe anziehen', verb: 'НАДЕТЬ ОБУВЬ' }
+    ];
+
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    function initGame() {
+        const pool = document.getElementById('verb-pool');
+        const grid = document.getElementById('game-grid');
+        pool.innerHTML = '';
+        grid.innerHTML = '';
+
+        // Pool erstellen
+        const allVerbs = scenarios.map(s => s.verb);
+        shuffle(allVerbs).forEach((verb, index) => {
+            const tag = document.createElement('div');
+            tag.className = 'verb-tag';
+            tag.textContent = verb;
+            tag.draggable = true;
+            tag.id = 'verb-' + index;
+            tag.addEventListener('dragstart', dragStart);
+            pool.appendChild(tag);
+        });
+
+        // Grid erstellen
+        shuffle([...scenarios]).forEach((s, index) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="card-icon">${s.icon}</div>
+                <div class="card-desc">${s.desc}</div>
+                <div class="drop-zone" data-correct="${s.verb}" id="zone-${index}">Hierher ziehen</div>
+            `;
+            grid.appendChild(card);
+        });
+
+        setupDragAndDrop();
+    }
+
+    function dragStart(e) {
+        e.dataTransfer.setData('text/plain', e.target.id);
+    }
+
+    function setupDragAndDrop() {
+        const zones = document.querySelectorAll('.drop-zone');
+        zones.forEach(zone => {
+            zone.addEventListener('dragover', e => {
+                e.preventDefault();
+                zone.classList.add('drag-over');
+            });
+
+            zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                const id = e.dataTransfer.getData('text/plain');
+                const draggedElement = document.getElementById(id);
+
+                if (draggedElement) {
+                    // Falls schon ein Verb drin ist, zurück in den Pool
+                    if (zone.firstChild && zone.firstChild.nodeType === 1) {
+                        document.getElementById('verb-pool').appendChild(zone.firstChild);
+                    }
+                    
+                    zone.innerHTML = '';
+                    zone.appendChild(draggedElement);
+                    
+                    if (draggedElement.textContent === zone.dataset.correct) {
+                        draggedElement.className = 'verb-tag correct';
+                    } else {
+                        draggedElement.className = 'verb-tag wrong';
+                    }
+                }
+            });
+        });
+    }
+
+    function resetGame() {
+        initGame();
+    }
+
+    function showSolution() {
+        const zones = document.querySelectorAll('.drop-zone');
+        zones.forEach(zone => {
+            const correctVerb = zone.dataset.correct;
+            zone.innerHTML = `<div class="verb-tag correct" style="cursor:default">${correctVerb}</div>`;
+        });
+        document.getElementById('verb-pool').innerHTML = '';
+    }
+
+    // Start
+    document.addEventListener('DOMContentLoaded', initGame);
+</script>
+
+</body>
+</html>
