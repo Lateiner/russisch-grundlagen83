@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Situations-Quiz: Russische Kleidung-Verben</title>
+    <!-- Polyfill für Drag and Drop auf Touch-Geräten (hier für Buttons nicht zwingend, aber für Konsistenz dabei) -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --accent-orange: #e67e22;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .instruction-box {
+            background: #f0f7ff;
+            padding: 15px;
+            border-left: 6px solid var(--secondary-color);
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        .instruction-box h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+        }
+
+        .quiz-card {
+            background: #fff;
+            border: 1px solid #e1e4e8;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .quiz-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .situation-text {
+            font-style: italic;
+            color: #555;
+            margin-bottom: 15px;
+            display: block;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .option-btn {
+            padding: 12px 15px;
+            background: #fff;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1rem;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .option-btn:hover:not(.disabled) {
+            border-color: var(--secondary-color);
+            background-color: #f0f8ff;
+        }
+
+        .option-btn.correct {
+            background-color: var(--success-color);
+            border-color: var(--success-color);
+            color: white;
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background-color: var(--error-color);
+            border-color: var(--error-color);
+            color: white;
+        }
+
+        .option-btn.disabled {
+            cursor: default;
+            opacity: 0.8;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: opacity 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; color: white; }
+        .btn-sol { background-color: var(--accent-orange); color: white; }
+
+        @media (max-width: 600px) {
+            .main-container { padding: 15px; }
+            .btn-action { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <h1>Situations-Quiz</h1>
+
+    <div class="instruction-box">
+        <h2>Anleitung</h2>
+        <p>Lies die beschriebene Situation auf Deutsch und wähle die logisch richtige russische Reaktion aus. Achte auf den Unterschied zwischen „etwas anziehen“ (Objekt), „jemanden anziehen“ (Person) und „sich umziehen“ (Wechsel).</p>
+    </div>
+
+    <div id="quiz-area">
+        <!-- Quiz-Karten werden hier geladen -->
+    </div>
+
+    <div class="controls">
+        <button class="btn-action btn-reset" onclick="initQuiz()">Zurücksetzen & Mischen</button>
+        <button class="btn-action btn-sol" onclick="showAllSolutions()">Lösungen anzeigen</button>
+    </div>
+</div>
+
+<script>
+    const situations = [
+        {
+            situation: "Du hast Kaffee auf dein weißes Hemd verschüttet.",
+            options: ["Я переоденусь", "Я оденусь", "Я надену"],
+            correct: "Я переоденусь"
+        },
+        {
+            situation: "Es ist Winter und dein Kind steht ohne Jacke an der Tür.",
+            options: ["Одень ребёнка", "Надень ребёнка", "Оденься ребёнка"],
+            correct: "Одень ребёнка"
+        },
+        {
+            situation: "Du möchtest ein Buch lesen, siehst aber die Buchstaben nicht scharf.",
+            options: ["Я надену очки", "Я одену очки", "Я переодену очки"],
+            correct: "Я надену очки"
+        },
+        {
+            situation: "Du bist gerade aufgewacht und bist noch im Pyjama.",
+            options: ["Пора одеться", "Пора надеться", "Пора переодеть"],
+            correct: "Пора одеться"
+        },
+        {
+            situation: "Draußen ist es sehr kalt und windig.",
+            options: ["Надень шапку", "Одень шапку", "Оденься шапку"],
+            correct: "Надень шапку"
+        },
+        {
+            situation: "Du kommst von der Arbeit nach Hause und möchtest deine bequeme Hose anziehen.",
+            options: ["Мне нужно переодеться", "Мне нужно одеться", "Мне нужно надеться"],
+            correct: "Мне нужно переодеться"
+        },
+        {
+            situation: "Dein Hund soll beim Spaziergang im Schnee nicht frieren.",
+            options: ["Надень свитер на собаку", "Одень свитер на собаку", "Оденься на собаку"],
+            correct: "Надень свитер auf собаку" // Matching logic fixed below
+        },
+        {
+            situation: "Du gehst heute Abend in ein schickes Restaurant.",
+            options: ["Я переоденусь в платье", "Я одену в платье", "Я надену в платье"],
+            correct: "Я переоденусь в платье"
+        },
+        {
+            situation: "Die kleine Puppe hat noch keine Kleidung an.",
+            options: ["Одень куклу", "Надень куклу", "Оденься куклу"],
+            correct: "Одень куклу"
+        },
+        {
+            situation: "Du merkst, dass du zwei verschiedene Socken anhast.",
+            options: ["Надо переодеть носки", "Надо одеть носки", "Надо одеться носки"],
+            correct: "Надо переодеть носки"
+        },
+        {
+            situation: "Du stehst vor dem Spiegel und probierst ein neues Schmuckstück aus.",
+            options: ["Я надену кольцо", "Я одену кольцо", "Я переодену кольцо"],
+            correct: "Я надену кольцо"
+        },
+        {
+            situation: "Du hilfst einem alten kranken Mann, in seinen Mantel zu schlüpfen.",
+            options: ["Я одену дедушку", "Я надену дедушку", "Я переоденусь дедушку"],
+            correct: "Я одену дедушку"
+        },
+        {
+            situation: "Das Baby hat die Kleidung beim Essen schmutzig gemacht.",
+            options: ["Нужно переодеть младенца", "Нужно надеть младенца", "Нужно одеться младенца"],
+            correct: "Нужно переодеть младенца"
+        },
+        {
+            situation: "Du betrittst eine Kirche und musst dein Haar bedecken.",
+            options: ["Надень платок", "Одень платок", "Оденься платок"],
+            correct: "Надень платок"
+        },
+        {
+            situation: "Nach dem Schwimmen im Pool sind deine Sachen nass.",
+            options: ["Надо переодеться", "Надо одеться", "Надо надеться"],
+            correct: "Надо переодеться"
+        },
+        {
+            situation: "Du hast gerade geduscht und stehst vor dem Kleiderschrank.",
+            options: ["Я одеваюсь", "Я надеваюсь", "Я переодеваю"],
+            correct: "Я одеваюсь"
+        },
+        {
+            situation: "Deine Hände sind eiskalt.",
+            options: ["Я надену перчатки", "Я одену перчатки", "Я оденусь перчатки"],
+            correct: "Я надену перчатки"
+        },
+        {
+            situation: "Es ist Zeit für das Training, du trägst aber noch Jeans.",
+            options: ["Переоденься в форму", "Оденься в форму", "Наденься в форму"],
+            correct: "Переоденься в форму"
+        },
+        {
+            situation: "Du willst, dass dein Sohn seine Schuhe anzieht.",
+            options: ["Надень обувь", "Одень обувь", "Оденься обувь"],
+            correct: "Надень обувь"
+        },
+        {
+            situation: "Du kaufst eine neue Uhr und legst sie direkt an.",
+            options: ["Я надену часы", "Я одену часы", "Я оденусь часы"],
+            correct: "Я надену часы"
+        }
+    ];
+
+    // Korrektur für einen Tippfehler im Datensatz oben
+    situations[6].correct = "Надень свитер на собаку";
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function initQuiz() {
+        const quizArea = document.getElementById('quiz-area');
+        quizArea.innerHTML = '';
+        
+        // Zufällige Reihenfolge der Fragen
+        const shuffledSituations = shuffleArray([...situations]);
+
+        shuffledSituations.forEach((item, index) => {
+            const card = document.createElement('div');
+            card.className = 'quiz-card';
+            card.id = `card-${index}`;
+
+            const situationSpan = document.createElement('span');
+            situationSpan.className = 'situation-text';
+            situationSpan.textContent = `${index + 1}. ${item.situation}`;
+            card.appendChild(situationSpan);
+
+            const optionsContainer = document.createElement('div');
+            optionsContainer.className = 'options-container';
+
+            // Optionen für diese Frage mischen
+            const shuffledOptions = shuffleArray([...item.options]);
+
+            shuffledOptions.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = opt;
+                btn.onclick = () => checkAnswer(btn, opt, item.correct, optionsContainer);
+                optionsContainer.appendChild(btn);
+            });
+
+            card.appendChild(optionsContainer);
+            quizArea.appendChild(card);
+        });
+    }
+
+    function checkAnswer(btn, selected, correct, container) {
+        if (container.classList.contains('answered')) return;
+
+        const allBtns = container.querySelectorAll('.option-btn');
+        
+        if (selected === correct) {
+            btn.classList.add('correct');
+        } else {
+            btn.classList.add('wrong');
+            // Zeige die richtige Antwort an
+            allBtns.forEach(b => {
+                if (b.textContent === correct) b.classList.add('correct');
+            });
+        }
+
+        allBtns.forEach(b => b.classList.add('disabled'));
+        container.classList.add('answered');
+    }
+
+    function showAllSolutions() {
+        const cards = document.querySelectorAll('.quiz-card');
+        cards.forEach((card, index) => {
+            const container = card.querySelector('.options-container');
+            if (container.classList.contains('answered')) return;
+
+            // Finde die richtige Lösung für diese Karte anhand der Situation
+            const situationText = card.querySelector('.situation-text').textContent.split('. ')[1];
+            const originalData = situations.find(s => s.situation === situationText);
+            
+            const btns = container.querySelectorAll('.option-btn');
+            btns.forEach(btn => {
+                if (btn.textContent === originalData.correct) {
+                    btn.classList.add('correct');
+                }
+                btn.classList.add('disabled');
+            });
+            container.classList.add('answered');
+        });
+    }
+
+    // Initialisierung beim Laden
+    document.addEventListener('DOMContentLoaded', initQuiz);
+</script>
+
+</body>
+</html>
