@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprachassistent Russisch: Kleidung-Verben</title>
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+
+        .explanation {
+            background: #f0f7ff;
+            padding: 20px;
+            border-left: 6px solid var(--secondary-color);
+            margin-bottom: 35px;
+            border-radius: 8px;
+        }
+
+        .explanation h2 {
+            margin-top: 0;
+            color: var(--secondary-color);
+        }
+
+        .verb-item {
+            margin-bottom: 12px;
+        }
+
+        .verb-bold {
+            font-weight: bold;
+            color: #e67e22;
+            text-transform: uppercase;
+        }
+
+        .exercise-card {
+            background: #fff;
+            border: 1px solid #e1e4e8;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .exercise-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .task-head {
+            font-weight: bold;
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .sentence {
+            font-size: 1.1em;
+            margin: 15px 0;
+        }
+
+        select {
+            padding: 10px;
+            font-size: 1em;
+            border-radius: 6px;
+            border: 2px solid #bdc3c7;
+            background-color: white;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s;
+            min-width: 160px;
+        }
+
+        select.correct {
+            border-color: var(--success-color);
+            background-color: #eafaf1;
+            color: var(--success-color);
+            font-weight: bold;
+        }
+
+        select.wrong {
+            border-color: var(--error-color);
+            background-color: #fdedec;
+            color: var(--error-color);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: background 0.2s;
+        }
+
+        .btn-reset { background-color: #95a5a6; color: white; }
+        .btn-reset:hover { background-color: #7f8c8d; }
+
+        .btn-sol { background-color: #f39c12; color: white; }
+        .btn-sol:hover { background-color: #d35400; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            select { width: 100%; margin: 10px 0; }
+            .button-group { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russische Grammatik</h1>
+    
+    <section class="explanation">
+        <h2>Grundlagen: НАДЕТЬ, ОДЕТЬ(СЯ), ПЕРЕОДЕТЬ(СЯ)</h2>
+        <div class="verb-item">
+            <span class="verb-bold">НАДЕТЬ</span> (что / на кого): Fokus auf das Kleidungsstück oder Accessoire.<br>
+            <em>Beispiel: Я надеваю шапку. („Ich setze die Mütze auf.“)</em>
+        </div>
+        <div class="verb-item">
+            <span class="verb-bold">ОДЕТЬ</span> (кого): Man zieht eine andere Person (oder ein Tier) an.<br>
+            <em>Beispiel: Мама одевает ребёнка. („Die Mutter zieht das Kind an.“)</em>
+        </div>
+        <div class="verb-item">
+            <span class="verb-bold">ОДЕТЬСЯ</span> (как / во что): Man zieht sich selbst an.<br>
+            <em>Beispiel: Я одеваюсь и иду на работу. („Ich ziehe mich an und gehe zur Arbeit.“)</em>
+        </div>
+        <div class="verb-item">
+            <span class="verb-bold">ПЕРЕОДЕТЬ</span> (кого / что): Ein Kleidungsstück wechseln oder jemanden umziehen.<br>
+            <em>Beispiel: Нужно переодеть грязную рубашку. („Man muss das schmutzige Hemd wechseln.“)</em>
+        </div>
+        <div class="verb-item">
+            <span class="verb-bold">ПЕРЕОДЕТЬСЯ</span> (во что): Man zieht sich selbst um.<br>
+            <em>Beispiel: Я хочу переодеться в платье. („Ich möchte mich in ein Kleid umziehen.“)</em>
+        </div>
+    </section>
+
+    <div id="exercise-list">
+        <!-- Aufgaben werden hier generiert -->
+    </div>
+</div>
+
+<script>
+    const exercises = [
+        { id: 1, sentence: 'Маша всегда ... шапку, когда холодно.', options: ['надевает', 'одевает'], answer: 'надевает' },
+        { id: 2, sentence: 'Мама ... дочку в тёплый свитер.', options: ['одевает', 'надевает'], answer: 'одевает' },
+        { id: 3, sentence: 'Я проснулся, позавтракал и ... .', options: ['оделся', 'наделся'], answer: 'оделся' },
+        { id: 4, sentence: 'Помоги мне ... это кольцо на пальчик.', options: ['надеть', 'одеть'], answer: 'надеть' },
+        { id: 5, sentence: 'Папа ... сына перед прогулкой.', options: ['одевает', 'надевает'], answer: 'одевает' },
+        { id: 6, sentence: 'На улице мороз, нужно ... потеплее.', options: ['одеться', 'надеться'], answer: 'одеться' },
+        { id: 7, sentence: 'Маша пролила сок и решила ... платье.', options: ['переодеть', 'переодеться'], answer: 'переодеть' },
+        { id: 8, sentence: 'Мы идем в театр, поэтому нам нужно ... .', options: ['переодеться', 'надеться'], answer: 'переодеться' },
+        { id: 9, sentence: 'Она ... ребёнка в чистую одежду после прогулки.', options: ['переодела', 'надела'], answer: 'переодела' },
+        { id: 10, sentence: 'Я ... очки и начал читать книгу.', options: ['надел', 'одел'], answer: 'надел' },
+        { id: 11, sentence: 'В бассейне дети должны ... в купальники.', options: ['переодеться', 'одеться'], answer: 'переодеться' },
+        { id: 12, sentence: 'Пожалуйста, ... свитер на собаку, ей холодно.', options: ['надень', 'одень'], answer: 'надень' },
+        { id: 13, sentence: 'Мама сказала: „... быстро, мы опаздываем!“', options: ['Одевайся', 'Надевайся'], answer: 'Одевайся' },
+        { id: 14, sentence: 'Сестра ... в новое красивое платье.', options: ['оделась', 'наделась'], answer: 'оделась' },
+        { id: 15, sentence: 'Мне нужно ... in eine Sportuniform umziehen.', sentence: 'Мне нужно ... в спортивную форму для тренировки.', options: ['переодеться', 'надеться'], answer: 'переодеться' },
+        { id: 16, sentence: 'Дедушка всегда ... тёплые носки зимой.', options: ['надевает', 'одевает'], answer: 'надевает' },
+        { id: 17, sentence: 'Маша ... куклу в розовое платье.', options: ['одела', 'надела'], answer: 'одела' },
+        { id: 18, sentence: 'После работы я прихожу домой и сразу ... .', options: ['переодеваюсь', 'надеваюсь'], answer: 'переодеваюсь' },
+        { id: 19, sentence: 'Почему ты не ... перчатки?', options: ['надел', 'одел'], answer: 'надел' },
+        { id: 20, sentence: 'Перед входом в храм она ... платок на голову.', options: ['надела', 'одела'], answer: 'надела' }
+    ];
+
+    // Hilfsfunktion zum Mischen
+    function shuffleArray(array) {
+        let shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+
+    function generateOptionsHtml(options) {
+        const shuffled = shuffleArray(options);
+        return `<option value="">-- ? --</option>` + 
+               shuffled.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+    }
+
+    function initExercises() {
+        const list = document.getElementById('exercise-list');
+        exercises.forEach((ex, index) => {
+            const card = document.createElement('div');
+            card.className = 'exercise-card';
+            
+            const sentenceHtml = ex.sentence.replace('...', 
+                `<select id="sel-${ex.id}" onchange="check(this, '${ex.answer}')">
+                    ${generateOptionsHtml(ex.options)}
+                </select>`
+            );
+
+            card.innerHTML = `
+                <span class="task-head">Aufgabe ${index + 1}</span>
+                <div class="sentence">${sentenceHtml}</div>
+                <div class="button-group">
+                    <button class="btn-reset" onclick="resetAndShuffle(${ex.id})">Zurücksetzen und mischen</button>
+                    <button class="btn-sol" onclick="showSol(${ex.id}, '${ex.answer}')">Lösung anzeigen</button>
+                </div>
+            `;
+            list.appendChild(card);
+        });
+    }
+
+    window.check = function(element, correctAnswer) {
+        if (element.value === "") {
+            element.className = "";
+            return;
+        }
+        if (element.value === correctAnswer) {
+            element.className = "correct";
+        } else {
+            element.className = "wrong";
+        }
+    };
+
+    window.resetAndShuffle = function(id) {
+        const sel = document.getElementById(`sel-${id}`);
+        const ex = exercises.find(e => e.id === id);
+        
+        // Optionen neu mischen und HTML ersetzen
+        sel.innerHTML = generateOptionsHtml(ex.options);
+        sel.value = "";
+        sel.className = "";
+    };
+
+    window.showSol = function(id, correctAnswer) {
+        const sel = document.getElementById(`sel-${id}`);
+        sel.value = correctAnswer;
+        sel.className = "correct";
+    };
+
+    document.addEventListener('DOMContentLoaded', initExercises);
+</script>
+
+</body>
+</html>
