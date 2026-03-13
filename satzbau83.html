@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satzbau-Baukasten: Russische Kleidung-Verben</title>
+    <!-- Polyfill für Drag and Drop auf Touch-Geräten (falls benötigt) -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f4f7f6;
+            --card-bg: #ffffff;
+            --accent-orange: #e67e22;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .instruction-box {
+            background: #f0f7ff;
+            padding: 15px;
+            border-left: 6px solid var(--secondary-color);
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        .instruction-box h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+        }
+
+        /* Satzbau-Bereich */
+        .exercise-wrapper {
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .task-header {
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .target-area {
+            min-height: 50px;
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .target-area.correct { border-color: var(--success-color); background-color: #eafaf1; }
+        .target-area.wrong { border-color: var(--error-color); background-color: #fdedec; }
+
+        .word-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .word {
+            padding: 8px 15px;
+            background: var(--secondary-color);
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            user-select: none;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        .word:active { transform: scale(0.95); }
+        .word.used { opacity: 0.3; cursor: default; pointer-events: none; }
+
+        /* Kontrollen */
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: opacity 0.2s;
+            font-size: 0.9rem;
+        }
+
+        .btn-reset { background-color: #95a5a6; color: white; }
+        .btn-sol { background-color: var(--accent-orange); color: white; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            .word { padding: 6px 10px; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russisch-Training: Satzbau-Baukasten</h1>
+
+    <div class="instruction-box">
+        <h2>Kurze Anleitung</h2>
+        <p>Bringe die Wörter in die richtige Reihenfolge, um grammatikalisch korrekte russische Sätze zu bilden. 
+           Klicke auf die Wörter im unteren Bereich, um sie dem Satz hinzuzufügen. Klicke auf ein Wort im weißen Feld, um es wieder zu entfernen.</p>
+    </div>
+
+    <div id="exercise-list">
+        <!-- Sätze werden per JavaScript geladen -->
+    </div>
+
+</div>
+
+<script>
+    const sentences = [
+        {
+            id: 1,
+            correctOrder: ["Мама", "надевает", "шапку", "на", "ребёнка"],
+            hint: "Mutter setzt dem Kind eine Mütze auf."
+        },
+        {
+            id: 2,
+            correctOrder: ["Я", "одеваюсь", "и", "иду", "на", "работу"],
+            hint: "Ich ziehe mich an und gehe zur Arbeit."
+        },
+        {
+            id: 3,
+            correctOrder: ["Папа", "одевает", "сына", "перед", "прогулкой"],
+            hint: "Papa zieht den Sohn vor dem Spaziergang an."
+        },
+        {
+            id: 4,
+            correctOrder: ["Надень", "тёплый", "свитер", "на", "себя"],
+            hint: "Zieh dir einen warmen Pullover an!"
+        },
+        {
+            id: 5,
+            correctOrder: ["Нужно", "переодеть", "грязную", "рубашку"],
+            hint: "Man muss das schmutzige Hemd wechseln."
+        },
+        {
+            id: 6,
+            correctOrder: ["Маша", "переодевается", "в", "красивое", "платье"],
+            hint: "Mascha zieht sich in ein schönes Kleid um."
+        },
+        {
+            id: 7,
+            correctOrder: ["Дедушка", "надевает", "очки", "и", "читает"],
+            hint: "Opa setzt die Brille auf und liest."
+        },
+        {
+            id: 8,
+            correctOrder: ["Мы", "переодеваемся", "после", "тренировки"],
+            hint: "Wir ziehen uns nach dem Training um."
+        },
+        {
+            id: 9,
+            correctOrder: ["Он", "надевает", "перчатки", "на", "руки"],
+            hint: "Er zieht Handschuhe an (an die Hände)."
+        },
+        {
+            id: 10,
+            correctOrder: ["Помоги", "мне", "одеть", "маленькую", "дочку"],
+            hint: "Hilf mir, die kleine Tochter anzuziehen."
+        }
+    ];
+
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    function initExercises() {
+        const list = document.getElementById('exercise-list');
+        list.innerHTML = '';
+
+        sentences.forEach((s) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'exercise-wrapper';
+            wrapper.id = `wrapper-${s.id}`;
+
+            const shuffledWords = shuffle([...s.correctOrder]);
+
+            wrapper.innerHTML = `
+                <span class="task-header">Satz ${s.id}: ${s.hint}</span>
+                <div class="target-area" id="target-${s.id}"></div>
+                <div class="word-pool" id="pool-${s.id}">
+                    ${shuffledWords.map((w, i) => `<div class="word" data-word="${w}" onclick="addWord(${s.id}, this)">${w}</div>`).join('')}
+                </div>
+                <div class="controls">
+                    <button class="btn-reset" onclick="resetSentence(${s.id})">Zurücksetzen</button>
+                    <button class="btn-sol" onclick="showSolution(${s.id})">Lösung anzeigen</button>
+                </div>
+            `;
+            list.appendChild(wrapper);
+        });
+    }
+
+    window.addWord = function(sId, wordEl) {
+        const target = document.getElementById(`target-${sId}`);
+        const sentence = sentences.find(s => s.id === sId);
+        
+        // Neues Wort-Element für Zielbereich erstellen
+        const newWord = document.createElement('div');
+        newWord.className = 'word';
+        newWord.textContent = wordEl.textContent;
+        newWord.onclick = function() { removeWord(sId, newWord, wordEl); };
+        
+        target.appendChild(newWord);
+        wordEl.classList.add('used');
+
+        checkSentence(sId);
+    };
+
+    window.removeWord = function(sId, wordInTarget, originalWordInPool) {
+        wordInTarget.remove();
+        originalWordInPool.classList.remove('used');
+        checkSentence(sId);
+    };
+
+    function checkSentence(sId) {
+        const target = document.getElementById(`target-${sId}`);
+        const currentWords = Array.from(target.children).map(c => c.textContent);
+        const correctOrder = sentences.find(s => s.id === sId).correctOrder;
+
+        target.className = 'target-area'; // Reset
+
+        if (currentWords.length === correctOrder.length) {
+            const isCorrect = currentWords.every((w, i) => w === correctOrder[i]);
+            target.classList.add(isCorrect ? 'correct' : 'wrong');
+        }
+    }
+
+    window.resetSentence = function(sId) {
+        const target = document.getElementById(`target-${sId}`);
+        const pool = document.getElementById(`pool-${sId}`);
+        target.innerHTML = '';
+        target.className = 'target-area';
+        Array.from(pool.children).forEach(w => w.classList.remove('used'));
+    };
+
+    window.showSolution = function(sId) {
+        const target = document.getElementById(`target-${sId}`);
+        const sentence = sentences.find(s => s.id === sId);
+        const pool = document.getElementById(`pool-${sId}`);
+        
+        target.innerHTML = '';
+        sentence.correctOrder.forEach(w => {
+            const wordEl = document.createElement('div');
+            wordEl.className = 'word';
+            wordEl.textContent = w;
+            target.appendChild(wordEl);
+        });
+        
+        target.className = 'target-area correct';
+        Array.from(pool.children).forEach(w => w.classList.add('used'));
+    };
+
+    document.addEventListener('DOMContentLoaded', initExercises);
+</script>
+
+</body>
+</html>
