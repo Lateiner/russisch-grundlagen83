@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktives Training: НАДЕТЬ vs. ОДЕТЬ</title>
+    <!-- Polyfill für Drag and Drop auf Touch-Geräten -->
+    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch@1.3.1/DragDropTouch.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+            --bg-color: #f8f9fa;
+            --card-bg: #ffffff;
+            --accent-orange: #e67e22;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 10px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--secondary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+
+        .explanation {
+            background: #f0f7ff;
+            padding: 20px;
+            border-left: 6px solid var(--secondary-color);
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+
+        .explanation h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+        }
+
+        .verb-rule {
+            margin-bottom: 10px;
+        }
+
+        .verb-name {
+            font-weight: bold;
+            color: var(--accent-orange);
+            text-transform: uppercase;
+        }
+
+        /* Spielbereich */
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .instruction {
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+
+        /* Wort-Pool */
+        #item-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            padding: 20px;
+            background: #f1f3f5;
+            border: 2px dashed #ccc;
+            border-radius: 12px;
+            min-height: 100px;
+        }
+
+        .draggable {
+            padding: 10px 18px;
+            background: var(--secondary-color);
+            color: white;
+            border-radius: 8px;
+            cursor: grab;
+            user-select: none;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, background-color 0.3s;
+            font-size: 1.1rem;
+        }
+
+        .draggable:active {
+            cursor: grabbing;
+        }
+
+        .draggable.correct {
+            background-color: var(--success-color);
+        }
+
+        .draggable.wrong {
+            background-color: var(--error-color);
+        }
+
+        /* Drop-Zonen */
+        .drop-zones {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .drop-zone {
+            background: #fff;
+            border: 3px solid #dee2e6;
+            border-radius: 12px;
+            padding: 15px;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+
+        .drop-zone.drag-over {
+            border-color: var(--secondary-color);
+            background-color: #e3f2fd;
+        }
+
+        .drop-zone h3 {
+            margin-top: 0;
+            text-align: center;
+            border-bottom: 2px solid #eee;
+            width: 100%;
+            padding-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .drop-zone h3 small {
+            display: block;
+            font-weight: normal;
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Kontrollen */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-reset { background-color: #95a5a6; color: white; }
+        .btn-sol { background-color: var(--accent-orange); color: white; }
+
+        @media (max-width: 650px) {
+            .drop-zones {
+                grid-template-columns: 1fr;
+            }
+            .drop-zone {
+                min-height: 200px;
+            }
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Russisch-Training: Kategorisierung</h1>
+
+    <section class="explanation">
+        <h2>Grundregeln</h2>
+        <div class="verb-rule">
+            <span class="verb-name">НАДЕТЬ</span> (что?): Fokus auf ein <b>Kleidungsstück</b> oder <b>Accessoire</b>.
+            <br><i>Beispiel: надень шапку! („setz die Mütze auf!“)</i>
+        </div>
+        <div class="verb-rule">
+            <span class="verb-name">ОДЕТЬ</span> (кого?): Fokus auf eine <b>Person</b>, ein <b>Kind</b> oder ein <b>Tier</b>.
+            <br><i>Beispiel: одень ребёнка! („zieh das Kind an!“)</i>
+        </div>
+    </section>
+
+    <div class="game-area">
+        <div class="instruction">Ziehe die Wörter in den richtigen Container:</div>
+
+        <div id="item-pool">
+            <!-- Wörter werden per JavaScript eingefügt -->
+        </div>
+
+        <div class="drop-zones">
+            <div class="drop-zone" id="zone-nadet" data-correct-type="item">
+                <h3>НАДЕТЬ<br><small>(Kleidung / Accessoires)</small></h3>
+            </div>
+            <div class="drop-zone" id="zone-odet" data-correct-type="person">
+                <h3>ОДЕТЬ<br><small>(Personen / Tiere / Puppen)</small></h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn-reset" onclick="resetGame()">Zurücksetzen und mischen</button>
+        <button class="btn-sol" onclick="showSolution()">Lösung anzeigen</button>
+    </div>
+</div>
+
+<script>
+    const vocabulary = [
+        { word: 'шапку', type: 'item' },
+        { word: 'ребёнка', type: 'person' },
+        { word: 'свитер', type: 'item' },
+        { word: 'сына', type: 'person' },
+        { word: 'кольцо', type: 'item' },
+        { word: 'дочку', type: 'person' },
+        { word: 'очки', type: 'item' },
+        { word: 'собаку', type: 'person' },
+        { word: 'пальто', type: 'item' },
+        { word: 'куклу', type: 'person' },
+        { word: 'юбку', type: 'item' },
+        { word: 'брата', type: 'person' },
+        { word: 'перчатки', type: 'item' },
+        { word: 'кота', type: 'person' },
+        { word: 'платье', type: 'item' },
+        { word: 'сестру', type: 'person' },
+        { word: 'шарф', type: 'item' },
+        { word: 'младенца', type: 'person' },
+        { word: 'костюм', type: 'item' },
+        { word: 'медведя', type: 'person' }
+    ];
+
+    const pool = document.getElementById('item-pool');
+    const zones = document.querySelectorAll('.drop-zone');
+
+    function shuffle(array) {
+        return array.sort(() => Math.random() - 0.5);
+    }
+
+    function createDraggables() {
+        pool.innerHTML = '';
+        shuffle(vocabulary).forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'draggable';
+            div.textContent = item.word;
+            div.id = 'word-' + index;
+            div.draggable = true;
+            div.dataset.type = item.type;
+
+            div.addEventListener('dragstart', dragStart);
+            pool.appendChild(div);
+        });
+    }
+
+    function dragStart(e) {
+        e.dataTransfer.setData('text/plain', e.target.id);
+    }
+
+    zones.forEach(zone => {
+        zone.addEventListener('dragover', e => {
+            e.preventDefault();
+            zone.classList.add('drag-over');
+        });
+
+        zone.addEventListener('dragleave', () => {
+            zone.classList.remove('drag-over');
+        });
+
+        zone.addEventListener('drop', e => {
+            e.preventDefault();
+            zone.classList.remove('drag-over');
+            const id = e.dataTransfer.getData('text/plain');
+            const draggable = document.getElementById(id);
+            
+            if (draggable) {
+                zone.appendChild(draggable);
+                checkWord(draggable, zone);
+            }
+        });
+    });
+
+    function checkWord(draggable, zone) {
+        if (draggable.dataset.type === zone.dataset.correctType) {
+            draggable.classList.add('correct');
+            draggable.classList.remove('wrong');
+        } else {
+            draggable.classList.add('wrong');
+            draggable.classList.remove('correct');
+        }
+    }
+
+    function resetGame() {
+        zones.forEach(zone => {
+            const items = zone.querySelectorAll('.draggable');
+            items.forEach(item => {
+                item.classList.remove('correct', 'wrong');
+                pool.appendChild(item);
+            });
+        });
+        createDraggables();
+    }
+
+    function showSolution() {
+        const items = document.querySelectorAll('.draggable');
+        const zoneNadet = document.getElementById('zone-nadet');
+        const zoneOdet = document.getElementById('zone-odet');
+
+        items.forEach(item => {
+            item.classList.remove('wrong');
+            item.classList.add('correct');
+            if (item.dataset.type === 'item') {
+                zoneNadet.appendChild(item);
+            } else {
+                zoneOdet.appendChild(item);
+            }
+        });
+    }
+
+    // Initialisierung
+    document.addEventListener('DOMContentLoaded', createDraggables);
+</script>
+
+</body>
+</html>
